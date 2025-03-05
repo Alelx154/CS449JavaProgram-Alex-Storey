@@ -1,6 +1,6 @@
-import projectTestGUI.testWindow;
+package mainFiles;
 
-import javax.swing.*;
+import projectTestGUI.testWindow;
 
 public class Main {
 
@@ -9,10 +9,10 @@ public class Main {
 		System.out.println("Hello world!");
 		
 		AddSomething(5, 5);
-		PrintSomething("Words or someting");
+		PrintSomething("Words or something");
 
 		testWindow ui = new testWindow();
-		//JPanel root = ui.getPannelMain();
+
 	}
 	
 	public static int AddSomething(int a, int b) {
