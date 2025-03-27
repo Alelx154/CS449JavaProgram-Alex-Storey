@@ -22,10 +22,13 @@ public class GameBoard extends JFrame {
 
     private GameBoardCanvas gameBoardCanvas;
 
-    private final Board board;
+    private final CommonFunctions game;
 
-    public GameBoard(Board board, int newBoardSize){
-        this.board = board;
+    private JLabel player1ScoreLabel;
+    private JLabel player2ScoreLabel;
+
+    public GameBoard(CommonFunctions game, int newBoardSize){
+        this.game = game;
         this.board_size = newBoardSize;
         setContentPane();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,17 +37,16 @@ public class GameBoard extends JFrame {
         setVisible(true);
         setLocationRelativeTo(null);
         add(gameBoardCanvas);
-
         setVisible(true);
     }
 
     public GameBoard(){
-        this.board = null;
+        this.game = null;
         this.board_size = 0;
     }
 
-    public Board getBoard(){
-        return board;
+    public CommonFunctions getGame(){
+        return game;
     }
 
     private void setContentPane(){
@@ -56,6 +58,19 @@ public class GameBoard extends JFrame {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
         contentPane.add(gameBoardCanvas, BorderLayout.CENTER);
+
+        JPanel scorePanel = new JPanel();
+        scorePanel.setLayout(new GridLayout(1, 2));
+        player1ScoreLabel = new JLabel("Player 1 Score: 0");
+        player2ScoreLabel = new JLabel("Player 2 Score: 0");
+        scorePanel.add(player1ScoreLabel);
+        scorePanel.add(player2ScoreLabel);
+        contentPane.add(scorePanel, BorderLayout.NORTH);
+    }
+
+    private void updateScores(){
+        player1ScoreLabel.setText("Player 1 Score: " + GeneralGame.getPlayer1Score());
+        player2ScoreLabel.setText("Player 2 Score: " + GeneralGame.getPlayer2Score());
     }
 
     class GameBoardCanvas extends JPanel {
@@ -64,8 +79,10 @@ public class GameBoard extends JFrame {
                 public void mouseClicked(MouseEvent e) {
                     int rowSelected = e.getY() / cell_size;
                     int colSelected = e.getX() / cell_size;
-                    board.makeMove(rowSelected, colSelected);
+                    game.makeMove(rowSelected, colSelected);
                     repaint();
+                    updateScores();
+                    checkForWin();
                 }
             });
         }
@@ -95,14 +112,53 @@ public class GameBoard extends JFrame {
                 for (int col = 0; col < board_size; col++){
                     int x1 = col * cell_size + cell_padding;
                     int y1 = row * cell_size + cell_padding + symbol_size;
-                    if (board.getCell(row,col) == 1){
+                    if (game.getCell(row,col) == 1){
                         g2d.setColor(Color.YELLOW);
                         g2d.drawString("S", x1, y1);
-                    }else if (board.getCell(row,col) == 2){
+                    }else if (game.getCell(row,col) == 2){
                         g2d.setColor(Color.BLUE);
                         g2d.drawOval(x1, y1 - symbol_size, cell_size - 2 *cell_padding, cell_size - 2 * cell_padding);
                     }
                 }
+            }
+        }
+    }
+
+    private void checkForWin(){
+        if (game instanceof SimpleGame && game.checkWin()) {
+            String winner = game.isPlayer1Turn ? "Player 2" : "Player 1";
+            JOptionPane.showMessageDialog(this, winner + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+            System.exit(0);
+        }
+        else if (game instanceof SimpleGame && game.checkTie()){
+            JOptionPane.showMessageDialog(this, "Game is a tie! Game over");
+            System.exit(0);
+        }
+        if (game instanceof GeneralGame){
+            int totalCells = game.board_Size * game.board_Size;
+            int filledCells = 0;
+
+            for (int row = 0; row < game.board_Size; row++){
+                for (int col = 0; col < game.board_Size; col++){
+                    if (game.getCell(row, col) != 0){
+                        filledCells++;
+                    }
+                }
+            }
+
+            if (filledCells == totalCells){
+                String message;
+                if (GeneralGame.getPlayer1Score() > GeneralGame.getPlayer2Score()){
+                    message = "Player 1 wins!";
+                }
+                else if (GeneralGame.getPlayer2Score() > GeneralGame.getPlayer1Score()){
+                    message = "Player 2 wins!";
+                }
+                else{
+                    message = "It's a tie!";
+                }
+                JOptionPane.showMessageDialog(this, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                System.exit(0);
             }
         }
     }
@@ -154,12 +210,15 @@ public class GameBoard extends JFrame {
         JRadioButton computer1 = new JRadioButton("Computer");
         JRadioButton Player1_is_S = new JRadioButton("S");
         JRadioButton Player1_is_O = new JRadioButton("O");
+
         ButtonGroup group1 = new ButtonGroup();
         ButtonGroup group1_A = new ButtonGroup();
+
         group1.add(player1);
         group1.add(computer1);
         group1_A.add(Player1_is_S);
         group1_A.add(Player1_is_O);
+
         gbc.gridx = 1;
         gbc.gridy = 4;
         mainPanel.add(player1, gbc);
@@ -214,43 +273,40 @@ public class GameBoard extends JFrame {
         mainPanel.add(simple_game, gbc);
 
 
-
-
-
-
-
-
-
-        /*playerSubmit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (player1.isSelected()) {
-                    System.out.println("Player 1 is a human player");
-                    JOptionPane.showMessageDialog(frame, "Player 1 is a human player");
-                }
-                if (computer1.isSelected()) {
-                    System.out.println("Player 1 is a computer player");
-                    JOptionPane.showMessageDialog(frame, "Player 1 is a computer player");
-                }
-                if (player2.isSelected()) {
-                    System.out.println("Player 2 is a human player");
-                    JOptionPane.showMessageDialog(frame, "Player 2 is a human player");
-                }
-                if (computer2.isSelected()) {
-                    System.out.println("Player 2 is a computer player");
-                    JOptionPane.showMessageDialog(frame, "Player 2 is a human player");
-                }
-            }
-        });*/
-
-
         submitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try{
                     int newBoardSize = Integer.parseInt(textField.getText());
                     if (newBoardSize >= 3){
+                        char player1Choice = Player1_is_S.isSelected() ? 'S' : 'O';
+                        char player2Choice = Player2_is_S.isSelected() ? 'S' : 'O';
                         frame.dispose();
-                        Board board = new Board(newBoardSize);
-                        new GameBoard(board, newBoardSize);
+                        CommonFunctions game;
+                        if (player1Choice == player2Choice){
+                            player1Choice = 'S';
+                            player2Choice = 'O';
+                        }
+                        if (simple_game.isSelected()) {
+                            game = new SimpleGame(newBoardSize, player1Choice, player2Choice) {
+                                @Override
+                                public boolean checkSOS() {
+                                    return false;
+                                }
+                            };
+                        } else {
+                            game = new GeneralGame(newBoardSize, player1Choice, player2Choice) {
+                                @Override
+                                public boolean checkSOS() {
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean checkTie() {
+                                    return false;
+                                }
+                            };
+                        }
+                        new GameBoard(game, newBoardSize);
                     }else{
                         resultLabel.setText("Please enter a number larger than 2.");
                     }
@@ -263,7 +319,6 @@ public class GameBoard extends JFrame {
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.pack();
         frame.setLocationRelativeTo(null);
-
         frame.setVisible(true);
     }
 
@@ -274,10 +329,5 @@ public class GameBoard extends JFrame {
                 gameBoard.submit_and_player_or_computer_selection();
             }
         });
-
-
-
-
     }
-
 }

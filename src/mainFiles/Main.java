@@ -1,7 +1,5 @@
 package mainFiles;
 
-import projectTestGUI.testWindow;
-
 public class Main {
 
 	public static void main(String[] args) {
@@ -10,8 +8,6 @@ public class Main {
 		
 		AddSomething(5, 5);
 		PrintSomething("Words or something");
-
-		testWindow ui = new testWindow();
 
 	}
 	
