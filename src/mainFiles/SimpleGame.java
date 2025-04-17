@@ -1,17 +1,19 @@
 package mainFiles;
 
-public abstract class SimpleGame extends CommonFunctions {
+public class SimpleGame extends Game {
+    private boolean gameOver = false;
 
-    public SimpleGame(int boardSize, char player1Choice, char player2Choice) {
-        super(boardSize, player1Choice, player2Choice);
+    public SimpleGame(int boardSize, Player player1, Player player2) {
+        super(boardSize, player1, player2);
     }
 
-
+    @Override
     public boolean checkWin() {
         // Check for SOS pattern in rows, columns, and diagonals
         for (int row = 0; row < board_Size; row++) {
             for (int col = 0; col < board_Size; col++) {
                 if (checkSOS(row, col)) {
+                    gameOver = true;
                     return true;
                 }
             }
@@ -19,8 +21,9 @@ public abstract class SimpleGame extends CommonFunctions {
         return false;
     }
 
+    @Override
     public boolean checkTie() {
-        // Check if all cells are filled
+        // Check if all cells are filled and no SOS was made
         for (int row = 0; row < board_Size; row++) {
             for (int col = 0; col < board_Size; col++) {
                 if (grid[row][col] == 0) {
@@ -28,30 +31,20 @@ public abstract class SimpleGame extends CommonFunctions {
                 }
             }
         }
-        // No empty cells found, check if no player has won
-        return !checkWin();
+        return !gameOver; // It's a tie if board is full and no SOS was made
     }
 
-
-    protected boolean checkSOS(int row, int col) {
-        //Debug statements
-        System.out.println("Checking SOS");
-        System.out.println(checkDirection(row, col, 0, 1));
-        System.out.println(checkDirection(row, col, 1, 0));
-        System.out.println(checkDirection(row, col, 1, 1));
-        System.out.println(checkDirection(row, col, 1, -1));
-
-        return (checkDirection(row, col, 0, 1) ||
-                checkDirection(row, col, 1, 0) ||
-                checkDirection(row, col, 1, 1) ||
-                checkDirection(row, col, 1, -1));
-    }
-
-    private boolean checkDirection(int row, int col, int rowDir, int colDir) {
-        try {
-            return (grid[row][col] == 1 && grid[row + rowDir][col + colDir] == 2 && grid[row + 2 * rowDir][col + 2 * colDir] == 1);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return false;
+    @Override
+    public void makeMove(int row, int col) {
+        if (!gameOver && row >= 0 && row < board_Size && col >= 0 && col < board_Size && grid[row][col] == 0) {
+            currentPlayer.makeMove(grid, row, col);
+            if (checkWin()) {
+                System.out.println("Game Over! " + currentPlayer.getName() + " wins!");
+            } else if (checkTie()) {
+                System.out.println("Game Over! It's a tie!");
+            } else {
+                switchTurn();
+            }
         }
     }
 }
