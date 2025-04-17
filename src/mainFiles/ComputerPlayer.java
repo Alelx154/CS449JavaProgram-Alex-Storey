@@ -1,7 +1,5 @@
 package mainFiles;
 
-import java.util.Random;
-
 public class ComputerPlayer extends Player {
     public int chosenRow;
     public int chosenCol;
@@ -16,16 +14,13 @@ public class ComputerPlayer extends Player {
         int bestScore = -1;
         char bestSymbol = 'S';
 
-        // Try both S and O to find the best move
         for (char symbol : new char[]{'S', 'O'}) {
             setSymbol(symbol);
             for (int row = 0; row < boardSize; row++) {
                 for (int col = 0; col < boardSize; col++) {
-                    if (grid[row][col] == 0) { // Check only empty cells
-                        // Simulate the move
+                    if (grid[row][col] == 0) {
                         grid[row][col] = (symbol == 'S') ? 1 : 2;
                         int score = evaluateMove(grid, row, col);
-                        // Undo the move
                         grid[row][col] = 0;
 
                         if (score > bestScore) {
@@ -44,15 +39,12 @@ public class ComputerPlayer extends Player {
 
     private int evaluateMove(int[][] grid, int row, int col) {
         int score = 0;
-        // Check for immediate SOS opportunities
         if (canFormSOS(grid, row, col)) {
-            score += 100; // High score for immediate SOS
+            score += 100;
         }
-        // Check for potential SOS in next move
         if (canCreateSOSOpportunity(grid, row, col)) {
-            score += 50; // Medium score for creating SOS opportunity
+            score += 50;
         }
-        // Prefer center and corners for better strategic positions
         int center = grid.length / 2;
         if ((row == center && col == center) ||
                 (row == 0 && col == 0) ||
@@ -71,7 +63,7 @@ public class ComputerPlayer extends Player {
 
         // Check if placing this symbol creates a potential SOS pattern
         if (getSymbol() == 'S') {
-            // Check if placing S creates a potential S-O-S pattern
+            // Check if placing S creates a potential SOS pattern
             // Vertical up
             if (row >= 2 && isValid(grid, row - 1, col, o) && grid[row - 2][col] == 0) return true;
             // Vertical down
@@ -89,7 +81,7 @@ public class ComputerPlayer extends Player {
             // Diagonal down-right
             if (row <= boardSize - 3 && col <= boardSize - 3 && isValid(grid, row + 1, col + 1, o) && grid[row + 2][col + 2] == 0) return true;
         } else if (getSymbol() == 'O') {
-            // Check if placing O creates a potential S-O-S pattern
+            // Check if placing O creates a potential SOS pattern
             // Vertical
             if (row > 0 && row < boardSize - 1 && isValid(grid, row - 1, col, s) && grid[row + 1][col] == 0) return true;
             if (row > 0 && row < boardSize - 1 && isValid(grid, row + 1, col, s) && grid[row - 1][col] == 0) return true;

@@ -52,7 +52,6 @@ public class GameBoardGUI extends JFrame {
         contentPane.setLayout(new BorderLayout());
         contentPane.add(gameBoardCanvas, BorderLayout.CENTER);
 
-        // Create main control panel with 3 sections
         JPanel mainControlPanel = new JPanel(new BorderLayout());
 
         // Score Panel at the top
@@ -122,16 +121,13 @@ public class GameBoardGUI extends JFrame {
             }
         });
 
-        // Update button states initially
         updateButtonStates();
     }
 
     private void updateButtonStates() {
-        // Enable/disable buttons based on whose turn it is
         boolean isPlayer1Turn = someGame.getTurn() == someGame.player1;
         boolean isPlayer2Turn = someGame.getTurn() == someGame.player2;
 
-        // Get all buttons from the control panel
         Component[] components = getContentPane().getComponents();
         for (Component comp : components) {
             if (comp instanceof JPanel) {
@@ -139,7 +135,6 @@ public class GameBoardGUI extends JFrame {
                 for (Component panelComp : panelComponents) {
                     if (panelComp instanceof JButton) {
                         JButton button = (JButton) panelComp;
-                        // Enable buttons only for the current player's turn
                         button.setEnabled((isPlayer1Turn && button.getText().startsWith("Player 1")) ||
                                         (isPlayer2Turn && button.getText().startsWith("Player 2")));
                     }
@@ -202,9 +197,8 @@ public class GameBoardGUI extends JFrame {
             for (int row = 0; row < board_size; row++) {
                 for (int col = 0; col < board_size; col++) {
                     int cellValue = someGame.getCell(row, col);
-                    if (cellValue == 1) { // S
+                    if (cellValue == 1) {
                         g2d.setColor(Color.YELLOW);
-                        // Center the S in the cell
                         int x = col * cell_size + (cell_size - textWidth) / 2;
                         int y = row * cell_size + (cell_size + textHeight) / 2;
                         g2d.drawString("S", x, y);
@@ -222,34 +216,28 @@ public class GameBoardGUI extends JFrame {
     private void HandleComputerTurn() {
         Player currentPlayer = someGame.getTurn();
         if (currentPlayer instanceof ComputerPlayer) {
-            // Add small delay for better visualization
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     SwingUtilities.invokeLater(() -> {
-                        // Use findBestMove instead of getRandomMove
                         int[] bestMove = ((ComputerPlayer) currentPlayer).findBestMove(someGame.getGrid());
                         int row = bestMove[0];
                         int col = bestMove[1];
 
-                        //Call makeMove in the game class to verify validity of move
                         someGame.makeMove(row, col);
                         repaint();
                         updateScores();
                         checkForWinGUI();
 
-                        // Check if it's still the computer's turn (they made an SOS)
                         if (someGame.getTurn() == currentPlayer) {
-                            // Computer gets another turn
                             HandleComputerTurn();
                         } else if (someGame.getTurn() instanceof ComputerPlayer) {
-                            // Other computer player's turn
                             HandleComputerTurn();
                         }
                     });
                 }
-            }, 300); // 300ms delay
+            }, 300);
         }
     }
 

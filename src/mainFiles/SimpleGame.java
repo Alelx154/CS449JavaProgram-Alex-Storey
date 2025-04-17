@@ -27,7 +27,7 @@ public class SimpleGame extends Game {
         for (int row = 0; row < board_Size; row++) {
             for (int col = 0; col < board_Size; col++) {
                 if (grid[row][col] == 0) {
-                    return false; // Found an empty cell
+                    return false;
                 }
             }
         }

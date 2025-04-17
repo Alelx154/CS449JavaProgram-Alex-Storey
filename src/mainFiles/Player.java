@@ -1,7 +1,7 @@
 package mainFiles;
 
 public abstract class Player {
-    protected char symbol; // 'S' or 'O'
+    protected char symbol; // S or O
     protected String name;
     public int score;
 
