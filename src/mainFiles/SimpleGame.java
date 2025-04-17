@@ -36,15 +36,23 @@ public class SimpleGame extends Game {
 
     @Override
     public void makeMove(int row, int col) {
-        if (!gameOver && row >= 0 && row < board_Size && col >= 0 && col < board_Size && grid[row][col] == 0) {
-            currentPlayer.makeMove(grid, row, col);
-            if (checkWin()) {
-                System.out.println("Game Over! " + currentPlayer.getName() + " wins!");
-            } else if (checkTie()) {
-                System.out.println("Game Over! It's a tie!");
-            } else {
-                switchTurn();
-            }
+        if (row < 0 || row >= board_Size || col < 0 || col >= board_Size) {
+            throw new IllegalArgumentException("Invalid move: position out of bounds");
+        }
+        if (grid[row][col] != 0) {
+            throw new IllegalArgumentException("Cell is already occupied");
+        }
+        if (gameOver) {
+            throw new IllegalStateException("Game is already over");
+        }
+        
+        currentPlayer.makeMove(grid, row, col);
+        if (checkWin()) {
+            System.out.println("Game Over! " + currentPlayer.getName() + " wins!");
+        } else if (checkTie()) {
+            System.out.println("Game Over! It's a tie!");
+        } else {
+            switchTurn();
         }
     }
 }

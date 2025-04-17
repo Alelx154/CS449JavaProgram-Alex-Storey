@@ -32,11 +32,16 @@ public abstract class Game {
     }
 
     public void makeMove(int row, int col) {
-        if (row >= 0 && row < this.board_Size && col >= 0 && col < this.board_Size && grid[row][col] == 0) {
+        if (row >= 0 && row < this.board_Size && col >= 0 && col < this.board_Size) {
+            if (grid[row][col] != 0) {
+                throw new IllegalArgumentException("Cell is already occupied");
+            }
             currentPlayer.makeMove(grid, row, col);
             if (!checkSOS(row, col)){
                 switchTurn();
             }
+        } else {
+            throw new IllegalArgumentException("Invalid move: position out of bounds");
         }
     }
 
@@ -50,7 +55,7 @@ public abstract class Game {
     public abstract boolean checkTie();
 
     public boolean checkSOS(int row, int col) {
-        if (grid[row][col] == 1) {
+        if (grid[row][col] == 1) { // S
             return (checkSOSForS_upDirection(row, col) ||
                     checkSOSForS_downDirection(row, col) ||
                     checkSOSForS_rightDirection(row, col) ||
@@ -59,13 +64,11 @@ public abstract class Game {
                     checkSOSForS_DiagonalDownRight(row, col) ||
                     checkSOSForS_DiagonalUpLeft(row, col) ||
                     checkSOSForS_DiagonalDownLeft(row, col));
-        } else if (grid[row][col] == 2) {
-            return (checkSOSForO_DiagonalToLeft(row, col) ||
-                    checkSOSForO_DiagonalToRight(row, col) ||
-                    checkSOSForO_DiagonalToLeft(row, col) ||
-                    checkSOSForO_DiagonalToRight(row, col) ||
+        } else if (grid[row][col] == 2) { // O
+            return (checkSOSForO_Vertical(row, col) ||
                     checkSOSForO_Horizontal(row, col) ||
-                    checkSOSForO_Vertical(row, col));
+                    checkSOSForO_DiagonalToRight(row, col) ||
+                    checkSOSForO_DiagonalToLeft(row, col));
         }
         return false;
     }
@@ -104,7 +107,7 @@ public abstract class Game {
 
     private boolean checkSOSForS_DiagonalUpRight(int row, int col) {
         try {
-            return (grid[row][col] == 1 && grid[row + 1][col + 1] == 2 && grid[row + 2][col + 2] == 1);
+            return (grid[row][col] == 1 && grid[row - 1][col + 1] == 2 && grid[row - 2][col + 2] == 1);
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
         }
@@ -112,7 +115,7 @@ public abstract class Game {
 
     private boolean checkSOSForS_DiagonalUpLeft(int row, int col) {
         try {
-            return (grid[row][col] == 1 && grid[row + 1][col - 1] == 2 && grid[row + 2][col - 2] == 1);
+            return (grid[row][col] == 1 && grid[row - 1][col - 1] == 2 && grid[row - 2][col - 2] == 1);
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
         }
@@ -120,7 +123,7 @@ public abstract class Game {
 
     private boolean checkSOSForS_DiagonalDownRight(int row, int col) {
         try {
-            return (grid[row][col] == 1 && grid[row - 1][col + 1] == 2 && grid[row - 2][col + 2] == 1);
+            return (grid[row][col] == 1 && grid[row + 1][col + 1] == 2 && grid[row + 2][col + 2] == 1);
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
         }
@@ -128,7 +131,7 @@ public abstract class Game {
 
     private boolean checkSOSForS_DiagonalDownLeft(int row, int col) {
         try {
-            return (grid[row][col] == 1 && grid[row - 1][col - 1] == 2 && grid[row - 2][col - 2] == 1);
+            return (grid[row][col] == 1 && grid[row + 1][col - 1] == 2 && grid[row + 2][col - 2] == 1);
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
         }
