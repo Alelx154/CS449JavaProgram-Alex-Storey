@@ -1,0 +1,12 @@
+BoardSize:3
+GameType:General
+0,0,S,Player 1
+1,1,O,Computer 2
+2,0,O,Player 1
+2,2,S,Computer 2
+0,1,S,Computer 2
+2,1,S,Player 1
+1,0,O,Player 1
+1,2,O,Computer 2
+0,2,S,Player 1
+WinnerInfo:Player 1 won with 2 points! (vs 1 points)

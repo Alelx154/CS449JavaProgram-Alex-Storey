@@ -1,0 +1,6 @@
+BoardSize:3
+GameType:Simple
+1,1,O,Player 1
+0,0,S,Computer 2
+2,2,S,Player 1
+WinnerInfo:Player 1 won by making an SOS!

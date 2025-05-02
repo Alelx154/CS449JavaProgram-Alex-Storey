@@ -1,0 +1,19 @@
+BoardSize:4
+GameType:General
+0,0,S,Computer 1
+0,1,O,Computer 2
+0,2,S,Computer 1
+1,0,O,Computer 1
+2,0,S,Computer 2
+1,1,O,Computer 2
+2,2,S,Computer 2
+1,2,O,Computer 2
+2,1,O,Computer 2
+0,3,S,Computer 2
+1,3,O,Computer 1
+2,3,S,Computer 2
+3,0,S,Computer 2
+3,1,O,Computer 1
+3,2,S,Computer 2
+3,3,S,Computer 2
+WinnerInfo:Computer 2 won with 7 points! (vs 1 points)
