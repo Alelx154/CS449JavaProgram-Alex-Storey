@@ -9,12 +9,15 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.List;
+import java.util.ArrayList;
 
 public class GameBoardGUI extends JFrame {
     private final int board_size;
     private final Game someGame;
     private JLabel player1ScoreLabel;
     private JLabel player2ScoreLabel;
+    private List<String> gameMoves;
 
     public static final int cell_size = 100;
     public static final int cell_padding = cell_size/6;
@@ -30,6 +33,7 @@ public class GameBoardGUI extends JFrame {
     public GameBoardGUI(Game game, int newBoardSize) {
         this.someGame = game;
         this.board_size = newBoardSize;
+        this.gameMoves = new ArrayList<>();
         setContentPane();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
@@ -156,7 +160,10 @@ public class GameBoardGUI extends JFrame {
                         rowSelected = e.getY() / cell_size;
                         colSelected = e.getX() / cell_size;
                         if (someGame.getCell(rowSelected, colSelected) == 0) {
+                            char symbol = someGame.getTurn().getSymbol();
+                            String player = someGame.getTurn().getName();
                             someGame.makeMove(rowSelected, colSelected);
+                            addMove(rowSelected, colSelected, symbol, player);
                             repaint();
                             updateScores();
                             checkForWinGUI();
@@ -221,11 +228,16 @@ public class GameBoardGUI extends JFrame {
                 @Override
                 public void run() {
                     SwingUtilities.invokeLater(() -> {
-                        int[] bestMove = ((ComputerPlayer) currentPlayer).findBestMove(someGame.getGrid());
+                        ComputerPlayer computerPlayer = (ComputerPlayer) currentPlayer;
+                        int[] bestMove = computerPlayer.findBestMove(someGame.getGrid());
                         int row = bestMove[0];
                         int col = bestMove[1];
-
+                        // Record the symbol before making the move
+                        char symbol = computerPlayer.getSymbol();
+                        String playerName = computerPlayer.getName();
+                        
                         someGame.makeMove(row, col);
+                        addMove(row, col, symbol, playerName);
                         repaint();
                         updateScores();
                         checkForWinGUI();
@@ -248,7 +260,16 @@ public class GameBoardGUI extends JFrame {
             String winner = someGame.getTurn().getName();
             System.out.println("Winner detected: " + winner);
             int option = JOptionPane.showConfirmDialog(this, 
-                winner + " wins!\nWould you like to play again?", 
+                winner + " wins!\nWould you like to save this game as a replay?", 
+                "Game Over", 
+                JOptionPane.YES_NO_OPTION);
+            
+            if (option == JOptionPane.YES_OPTION) {
+                saveReplay();
+            }
+            
+            option = JOptionPane.showConfirmDialog(this, 
+                "Would you like to play again?", 
                 "Game Over", 
                 JOptionPane.YES_NO_OPTION);
             
@@ -261,7 +282,16 @@ public class GameBoardGUI extends JFrame {
         }
         else if (someGame instanceof SimpleGame && someGame.checkTie()){
             int option = JOptionPane.showConfirmDialog(this, 
-                "Game is a tie!\nWould you like to play again?", 
+                "Game is a tie!\nWould you like to save this game as a replay?", 
+                "Game Over", 
+                JOptionPane.YES_NO_OPTION);
+            
+            if (option == JOptionPane.YES_OPTION) {
+                saveReplay();
+            }
+            
+            option = JOptionPane.showConfirmDialog(this, 
+                "Would you like to play again?", 
                 "Game Over", 
                 JOptionPane.YES_NO_OPTION);
             
@@ -279,17 +309,26 @@ public class GameBoardGUI extends JFrame {
 
             String message;
             if (someGame.player1.score > someGame.player2.score){
-                message = "Player 1 wins with " + player1Score + " points!\nWould you like to play again?";
+                message = "Player 1 wins with " + player1Score + " points!\nWould you like to save this game as a replay?";
             }
             else if (someGame.player2.score > someGame.player1.score){
-                message = "Player 2 wins with " + player2Score + " points!\nWould you like to play again?";
+                message = "Player 2 wins with " + player2Score + " points!\nWould you like to save this game as a replay?";
             }
             else {
-                message = "Game is a tie with " + player1Score + " points each!\nWould you like to play again?";
+                message = "Game is a tie with " + player1Score + " points each!\nWould you like to save this game as a replay?";
             }
 
             int option = JOptionPane.showConfirmDialog(this, 
                 message, 
+                "Game Over", 
+                JOptionPane.YES_NO_OPTION);
+            
+            if (option == JOptionPane.YES_OPTION) {
+                saveReplay();
+            }
+            
+            option = JOptionPane.showConfirmDialog(this, 
+                "Would you like to play again?", 
                 "Game Over", 
                 JOptionPane.YES_NO_OPTION);
             
@@ -300,6 +339,36 @@ public class GameBoardGUI extends JFrame {
                 System.exit(0);
             }
         }
+    }
+
+    private void saveReplay() {
+        String replayName = JOptionPane.showInputDialog(this, "Enter a name for this replay:");
+        if (replayName != null && !replayName.trim().isEmpty()) {
+            String gameType = (someGame instanceof SimpleGame) ? "Simple" : "General";
+            String winnerInfo;
+            
+            if (someGame instanceof SimpleGame) {
+                // For Simple game, the current player is the winner (they made the SOS)
+                winnerInfo = someGame.getTurn().getName() + " won by making an SOS!";
+            } else {
+                // For General game, compare scores
+                int player1Score = someGame.player1.score;
+                int player2Score = someGame.player2.score;
+                if (player1Score > player2Score) {
+                    winnerInfo = someGame.player1.getName() + " won with " + player1Score + " points! (vs " + player2Score + " points)";
+                } else if (player2Score > player1Score) {
+                    winnerInfo = someGame.player2.getName() + " won with " + player2Score + " points! (vs " + player1Score + " points)";
+                } else {
+                    winnerInfo = "Game ended in a tie with " + player1Score + " points each!";
+                }
+            }
+            
+            ReplayManager.saveReplay(replayName, board_size, gameMoves, gameType, winnerInfo);
+        }
+    }
+
+    private void addMove(int row, int col, char symbol, String player) {
+        gameMoves.add(row + "," + col + "," + symbol + "," + player);
     }
 
     private void SetUp(JFrame frame, JPanel mainPanel, GridBagConstraints gbc, JTextField textField, JLabel resultLabel, JButton submitButton) {
@@ -324,6 +393,34 @@ public class GameBoardGUI extends JFrame {
         gbc.gridy = 3;
         gbc.gridwidth = 3;
         mainPanel.add(submitButton, gbc);
+
+        JButton viewReplaysButton = new JButton("View Replays");
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 3;
+        mainPanel.add(viewReplaysButton, gbc);
+
+        viewReplaysButton.addActionListener(e -> {
+            List<String> replays = ReplayManager.getAvailableReplays();
+            if (replays.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "No replays available.");
+                return;
+            }
+
+            String[] replayArray = replays.toArray(new String[0]);
+            String selectedReplay = (String) JOptionPane.showInputDialog(
+                frame,
+                "Select a replay to view:",
+                "View Replays",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                replayArray,
+                replayArray[0]);
+
+            if (selectedReplay != null) {
+                new GameReplay(selectedReplay);
+            }
+        });
     }
 
     private void PlayerChoices(JPanel mainPanel, GridBagConstraints gbc, ButtonGroup group1, ButtonGroup group2, ButtonGroup GeneralOrSimple) {

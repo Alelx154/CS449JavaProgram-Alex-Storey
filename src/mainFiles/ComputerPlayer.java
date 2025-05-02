@@ -1,19 +1,61 @@
 package mainFiles;
 
+import java.util.Random;
+
 public class ComputerPlayer extends Player {
+    private final Random random = new Random();
     public int chosenRow;
     public int chosenCol;
+    private char lastChosenSymbol;  // Store the last chosen symbol
 
     public ComputerPlayer(String name) {
         super(name);
     }
 
-    public int[] findBestMove(int[][] grid){
+    @Override
+    public void makeMove(int[][] grid, int row, int col) {
+        if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length && grid[row][col] == 0) {
+            grid[row][col] = (getSymbol() == 'S') ? 1 : 2;
+            System.out.println(getName() + " made a move at (" + row + ", " + col + ") with symbol " + getSymbol());
+        } else {
+            throw new IllegalArgumentException("Invalid move. Cell is already occupied or out of bounds.");
+        }
+    }
+
+    public int[] findBestMove(int[][] grid) {
         int boardSize = grid.length;
         int[] bestMove = null;
         int bestScore = -1;
         char bestSymbol = 'S';
 
+        // First, check if we can make an SOS
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (grid[row][col] == 0) {
+                    // Try S
+                    setSymbol('S');
+                    grid[row][col] = 1;
+                    if (canFormSOS(grid, row, col)) {
+                        grid[row][col] = 0;
+                        lastChosenSymbol = 'S';
+                        return new int[]{row, col};
+                    }
+                    grid[row][col] = 0;
+
+                    // Try O
+                    setSymbol('O');
+                    grid[row][col] = 2;
+                    if (canFormSOS(grid, row, col)) {
+                        grid[row][col] = 0;
+                        lastChosenSymbol = 'O';
+                        return new int[]{row, col};
+                    }
+                    grid[row][col] = 0;
+                }
+            }
+        }
+
+        // If no SOS is possible, find the best move
         for (char symbol : new char[]{'S', 'O'}) {
             setSymbol(symbol);
             for (int row = 0; row < boardSize; row++) {
@@ -33,8 +75,20 @@ public class ComputerPlayer extends Player {
             }
         }
 
+        lastChosenSymbol = bestSymbol;
         setSymbol(bestSymbol);
         return bestMove;
+    }
+
+    @Override
+    public char getSymbol() {
+        // If we've just found a best move, use that symbol
+        if (lastChosenSymbol != 0) {
+            char symbol = lastChosenSymbol;
+            lastChosenSymbol = 0;  // Reset for next move
+            return symbol;
+        }
+        return super.getSymbol();
     }
 
     private int evaluateMove(int[][] grid, int row, int col) {
@@ -128,13 +182,5 @@ public class ComputerPlayer extends Player {
     private boolean isValid(int[][] grid, int row, int col, int expectedValue) {
         int boardSize = grid.length;
         return row >= 0 && row < boardSize && col >= 0 && col < boardSize && grid[row][col] == expectedValue;
-    }
-
-    public void makeMove(int[][] grid, int row, int col) {
-        int[] bestMove = findBestMove(grid);
-        chosenRow = bestMove[0];
-        chosenCol = bestMove[1];
-        grid[bestMove[0]][bestMove[1]] = (getSymbol() == 'S') ? 1 : 2;
-        System.out.println(getName() + " made a move at (" + bestMove[0] + ", " + bestMove[1] + ") with symbol " + getSymbol());
     }
 }
